@@ -16,11 +16,8 @@ impl Packet for HandshakePacket {
     fn id() -> u32 {
         0x00
     }
-}
-
-impl ProxyboundPacket for HandshakePacket {
     async fn read_from(connection: &mut PlayerConnection) -> Result<Box<HandshakePacket>, Error> {
-        let (_, id, buffer) = connection.read_packet_raw().await?;
+        let (_, id, buffer) = connection.read_packet().await?;
         if id != Self::id() {
             return Err(Error::new(ErrorKind::Other, "id mismatch!"));
         }
@@ -34,8 +31,13 @@ impl ProxyboundPacket for HandshakePacket {
             next_state: data::read_varint(&buffer, &mut position).unwrap(),
         }))
     }
-
-    fn forward_to_proxy(&self) {
-        todo!()
+    
+    fn write_to(&self, buffer: &mut Vec<u8>) {
+        data::write_varint(buffer, self.protocol);
+        data::write_string(buffer, &self.server_address);
+        data::write_ushort(buffer, self.port);
+        data::write_varint(buffer, self.next_state);
     }
 }
+
+impl ProxyboundPacket for HandshakePacket {}

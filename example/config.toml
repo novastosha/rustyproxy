@@ -1,0 +1,5 @@
+proxy_port = 25566
+address = "0.0.0.0"
+
+[servers]
+local_unauthenticated = { address = "localhost", port = 25565, name = "Fancy name for localhost" }
